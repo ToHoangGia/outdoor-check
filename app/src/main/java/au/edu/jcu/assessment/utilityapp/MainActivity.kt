@@ -83,20 +83,56 @@ fun UtilityApp() {
 
 @Composable
 fun UtilityScreen() {
-    var counter by remember { mutableIntStateOf(0) }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text("Utility Screen", style = MaterialTheme.typography.headlineMedium)
-        Text("Counter: $counter", style = MaterialTheme.typography.bodyLarge)
+        Text(
+            text = "Outdoor Check",
+            style = MaterialTheme.typography.headlineLarge
+        )
 
-        Button(onClick = { counter++ }) {
-            Text("Increment")
-        }
+        Text(
+            text = "Singapore",
+            style = MaterialTheme.typography.titleLarge
+        )
+
+        Text(
+            text = "30°C",
+            style = MaterialTheme.typography.displayLarge
+        )
+
+        Text(
+            text = "Partly cloudy",
+            style = MaterialTheme.typography.headlineSmall
+        )
+
+        Text(
+            text = "Sample data — live weather is not connected yet.",
+            style = MaterialTheme.typography.bodyMedium
+        )
+
+        Text(
+            text = "Upcoming weather",
+            style = MaterialTheme.typography.titleLarge
+        )
+
+        Text(
+            text = "10:00 AM · 30°C · Partly cloudy",
+            style = MaterialTheme.typography.bodyLarge
+        )
+
+        Text(
+            text = "11:00 AM · 31°C · Cloudy",
+            style = MaterialTheme.typography.bodyLarge
+        )
+
+        Text(
+            text = "12:00 PM · 32°C · Light rain",
+            style = MaterialTheme.typography.bodyLarge
+        )
     }
 }
 
