@@ -39,7 +39,13 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MobileTech_UtilityAppTheme {
-                UtilityApp()
+                val weatherViewModel: WeatherViewModel = viewModel()
+                val uiState by weatherViewModel.uiState.collectAsStateWithLifecycle()
+
+                UtilityApp(
+                    useCelsius = uiState.useCelsius,
+                    onUnitChange = weatherViewModel::setTemperatureUnit
+                )
             }
         }
     }
@@ -49,14 +55,19 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun UtilityAppPreview() {
     MobileTech_UtilityAppTheme {
-        UtilityApp()
+        UtilityApp(
+            useCelsius = true,
+            onUnitChange = {}
+        )
     }
 }
 
 @Composable
-fun UtilityApp() {
-    var selectedTab by remember { mutableStateOf("Utility") }
-    var useCelsius by remember { mutableStateOf(true) }
+fun UtilityApp(
+    useCelsius: Boolean,
+    onUnitChange: (Boolean) -> Unit
+) {
+    var selectedTab by rememberSaveable { mutableStateOf("Utility") }
 
     Scaffold(
         bottomBar = {
@@ -81,7 +92,7 @@ fun UtilityApp() {
                 "Utility" -> UtilityScreen(useCelsius = useCelsius)
                 "Settings" -> SettingsScreen(
                     useCelsius = useCelsius,
-                    onUnitChange = { useCelsius = it }
+                    onUnitChange = onUnitChange
                 )
             }
         }
