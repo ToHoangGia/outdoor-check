@@ -6,4 +6,5 @@ data class WeatherUiState(
     val weather: WeatherResponse? = null,
     val errorMessage: String? = null,
     val selectedCity: WeatherCity = WeatherCity.SINGAPORE,
+    val forecast: List<ForecastItem> = emptyList(),
 )

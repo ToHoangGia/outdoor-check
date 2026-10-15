@@ -9,6 +9,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.LocalDateTime
+import java.time.format.DateTimeParseException
 
 class WeatherViewModel(
     private val repository: WeatherRepository
@@ -36,6 +38,7 @@ class WeatherViewModel(
             it.copy(
                 isLoading = true,
                 weather = null,
+                forecast = emptyList(),
                 errorMessage = null
             )
         }
@@ -61,7 +64,8 @@ class WeatherViewModel(
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            weather = response
+                            weather = response,
+                            forecast = buildForecast(response)
                         )
                     }
                 }
@@ -108,5 +112,44 @@ class WeatherViewModel(
         }
 
         refreshWeather()
+    }
+
+    private fun buildForecast(
+        response: WeatherResponse
+    ): List<ForecastItem> {
+        val hourly = response.hourly ?: return emptyList()
+
+        val currentTime = try {
+            LocalDateTime.parse(
+                response.current?.time ?: return emptyList()
+            )
+        } catch (exception: DateTimeParseException) {
+            return emptyList()
+        }
+
+        return hourly.time.orEmpty()
+            .mapIndexedNotNull { index, time ->
+                val forecastTime = try {
+                    LocalDateTime.parse(time)
+                } catch (exception: DateTimeParseException) {
+                    return@mapIndexedNotNull null
+                }
+
+                if (!forecastTime.isAfter(currentTime)) {
+                    return@mapIndexedNotNull null
+                }
+
+                ForecastItem(
+                    time = time,
+                    temperature = hourly.temperatures
+                        ?.getOrNull(index)
+                        ?.takeIf { it.isFinite() },
+                    weatherCode = hourly.weatherCodes?.getOrNull(index),
+                    rainProbability = hourly.rainProbabilities
+                        ?.getOrNull(index)
+                        ?.takeIf { it in 0..100 }
+                )
+            }
+            .take(6)
     }
 }

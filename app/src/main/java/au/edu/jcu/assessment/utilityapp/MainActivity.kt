@@ -185,6 +185,11 @@ fun UtilityScreen(
                     text = "Time zone: ${uiState.weather?.timezone ?: "Unavailable"}",
                     style = MaterialTheme.typography.bodyMedium
                 )
+
+                ForecastSection(
+                    forecast = uiState.forecast,
+                    useCelsius = uiState.useCelsius
+                )
             }
 
             else -> {
