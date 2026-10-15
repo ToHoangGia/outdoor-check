@@ -30,6 +30,7 @@ class WeatherViewModel(
     fun refreshWeather() {
         // Prevent repeated taps from starting overlapping requests.
         if (_uiState.value.isLoading) return
+        val city = _uiState.value.selectedCity
 
         _uiState.update {
             it.copy(
@@ -42,8 +43,8 @@ class WeatherViewModel(
         viewModelScope.launch {
             try {
                 val response = repository.getWeather(
-                    latitude = 1.3521,
-                    longitude = 103.8198
+                    latitude = city.latitude,
+                    longitude = city.longitude
                 )
 
                 val temperature = response.current?.temperature
@@ -93,5 +94,19 @@ class WeatherViewModel(
 
             throw IllegalArgumentException("Unknown ViewModel class")
         }
+    }
+
+    fun selectCity(city: WeatherCity) {
+        val currentState = _uiState.value
+
+        if (currentState.isLoading || currentState.selectedCity == city) {
+            return
+        }
+
+        _uiState.update {
+            it.copy(selectedCity = city)
+        }
+
+        refreshWeather()
     }
 }

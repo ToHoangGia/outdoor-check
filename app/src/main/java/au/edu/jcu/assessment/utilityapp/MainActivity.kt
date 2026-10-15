@@ -53,6 +53,7 @@ class MainActivity : ComponentActivity() {
                 UtilityApp(
                     uiState = uiState,
                     onUnitChange = weatherViewModel::setTemperatureUnit,
+                    onCityChange = weatherViewModel::selectCity,
                     onRefresh = weatherViewModel::refreshWeather
                 )
             }
@@ -67,6 +68,7 @@ fun UtilityAppPreview() {
         UtilityApp(
             uiState = WeatherUiState(),
             onUnitChange = {},
+            onCityChange = {},
             onRefresh = {}
         )
     }
@@ -76,6 +78,7 @@ fun UtilityAppPreview() {
 fun UtilityApp(
     uiState: WeatherUiState,
     onUnitChange: (Boolean) -> Unit,
+    onCityChange: (WeatherCity) -> Unit,
     onRefresh: () -> Unit
 ) {
     var selectedTab by rememberSaveable { mutableStateOf("Utility") }
@@ -107,7 +110,10 @@ fun UtilityApp(
 
                 "Settings" -> SettingsScreen(
                     useCelsius = uiState.useCelsius,
-                    onUnitChange = onUnitChange
+                    onUnitChange = onUnitChange,
+                    selectedCity = uiState.selectedCity,
+                    isLoading = uiState.isLoading,
+                    onCityChange = onCityChange
                 )
             }
         }
@@ -132,7 +138,7 @@ fun UtilityScreen(
         )
 
         Text(
-            text = "Singapore",
+            text = uiState.selectedCity.displayName,
             style = MaterialTheme.typography.titleLarge
         )
 
@@ -205,11 +211,15 @@ fun UtilityScreen(
 @Composable
 fun SettingsScreen(
     useCelsius: Boolean,
-    onUnitChange: (Boolean) -> Unit
+    onUnitChange: (Boolean) -> Unit,
+    selectedCity: WeatherCity,
+    isLoading: Boolean,
+    onCityChange: (WeatherCity) -> Unit
 ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
@@ -217,6 +227,29 @@ fun SettingsScreen(
             text = "Settings",
             style = MaterialTheme.typography.headlineMedium
         )
+
+        Text(
+            text = "Weather location",
+            style = MaterialTheme.typography.titleLarge
+        )
+
+        Text(
+            text = "Selected city: ${selectedCity.displayName}",
+            style = MaterialTheme.typography.bodyLarge
+        )
+
+        WeatherCity.entries.forEach { city ->
+            Button(
+                onClick = { onCityChange(city) },
+                enabled = !isLoading && city != selectedCity
+            ) {
+                Text(city.displayName)
+            }
+        }
+
+        if (isLoading) {
+            Text("Updating weather…")
+        }
 
         Text(
             text = "Temperature unit",
@@ -282,3 +315,4 @@ fun weatherDescription(code: Int?): String {
         else -> "Weather description unavailable"
     }
 }
+
