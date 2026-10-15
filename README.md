@@ -1,67 +1,35 @@
-# MobileTech Utility App
+# Outdoor Check
 
-This is a basic Android app template for **Assessment 1: Utility App**.
-It provides the structure for a simple tabular UI using **Jetpack Compose** and **Material Design 3**.
+## Introduction
 
----
+- Who it helps: people checking conditions before going outside.
+- What it shows: city, temperature, weather description, and a short forecast.
+- Its current limitation: all weather values are sample data; live weather is not connected.
 
-## Getting Started
+## Features
 
-### How to Run
-1. Clone or download this repo  
-2. Open in Android Studio  
-3. Run on an emulator or physical device (API 26+ recommended)  
-
----
+- Main and settings screens with bottom navigation.
+- Sample weather for Singapore.
+- Celsius/Fahrenheit selection.
+- Temperature conversion on the main screen.
 
 ## Composables
 
-### UtilityApp()
-- Contains the screen layout using a Scaffold
-- Toggles content between Utility and Settings
-
-### UtilityScreen()
-- Displays a simple counter (replace with your utility logic)  
-- Includes a button to increment the counter
-
-### SettingsScreen()
-- Placeholder for user preferences or configuration  
-- Can be extended to modify main screen behavior (e.g., theme, units, limits)  
-
----
-
-## Key Concepts Covered
-
-| Week | Concept                        | Used In                          |
-|------|--------------------------------|----------------------------------|
-| 1    | Kotlin + Android Studio         | MainActivity.kt |
-| 2    | Jetpack Compose Layouts         | UtilityApp(), UtilityScreen(), SettingsScreen()   |
-| 3    | Material Design 3               | MobileTechUtilityAppTheme, MaterialTheme.typography |
-| 4    | ViewModel | Not included in starter          |
-| 5    | Retrofit  | Not included in starter          |
-
----
-
-## Suggested Extensions
-- Replace counter with a real utility (e.g., hydration tracker, timer)  
-- Add a ViewModel for state management  
-- Use SharedPreferences or DataStore to persist settings  
-- Add a simple API call using Retrofit (e.g., fetch weather or quotes)  
-
----
-
-## 📚 License
-This template is provided for educational use in CP3406.  
-Feel free to modify and extend it for your assessment.
-
-
-| Item | Your Outdoor Check decision |
+| File or component | Responsibility |
 |---|---|
-| App purpose | Help users quickly check weather before leaving home or planning an outdoor activity. |
-| Information display | Use a prominent current-weather card and a short forecast list. These cards are planned; the current prototype uses text. |
-| Navigation | Keep the template’s two bottom tabs for the main screen and settings. |
-| Accessibility improvement | Make the screen scrollable so information remains accessible on small screens and with larger text. |
-| Trust and clarity | Clearly label the current weather values as sample data. When live data is added, display its update time and any loading errors. |
-| Privacy | Let users select a city manually without requiring location permission. |
-| Testing observations | Write what happened during the checks above, including anything that needs improvement. |
-| Tutor feedback question | “Does my main screen communicate the app’s purpose clearly, and is the amount of weather information appropriate?” |
+| `MainActivity.kt` | Starts the app and connects the ViewModel state to Compose. |
+| `UtilityApp()` | Provides bottom navigation and passes state and callbacks to screens. |
+| `UtilityScreen()` | Displays sample weather using the selected temperature unit. |
+| `SettingsScreen()` | Displays the unit preference and sends change requests. |
+| `WeatherUiState.kt` | Describes shared UI state, currently `useCelsius`. |
+| `WeatherViewModel.kt` | Owns shared state and updates it through `StateFlow`. |
+| `formatTemperature()` | Formats Celsius values or converts them to Fahrenheit. |
+
+## Remaining Works
+
+- City selection.
+- Weather cards and a scrollable layout.
+- Repository and dependency injection.
+- Live weather through Retrofit.
+- Loading/error states and update timestamps.
+- ViewModel unit tests.
