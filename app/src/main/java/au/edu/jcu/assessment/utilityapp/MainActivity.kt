@@ -32,19 +32,28 @@ import au.edu.jcu.assessment.utilityapp.ui.theme.MobileTech_UtilityAppTheme
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
 
 class MainActivity : ComponentActivity() {
+    private val appContainer by lazy { AppContainer() }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             MobileTech_UtilityAppTheme {
-                val weatherViewModel: WeatherViewModel = viewModel()
+                val weatherViewModel: WeatherViewModel = viewModel(
+                    factory = WeatherViewModel.Factory(
+                        appContainer.weatherRepository
+                    )
+                )
                 val uiState by weatherViewModel.uiState.collectAsStateWithLifecycle()
 
                 UtilityApp(
-                    useCelsius = uiState.useCelsius,
-                    onUnitChange = weatherViewModel::setTemperatureUnit
+                    uiState = uiState,
+                    onUnitChange = weatherViewModel::setTemperatureUnit,
+                    onRefresh = weatherViewModel::refreshWeather
                 )
             }
         }
@@ -56,16 +65,18 @@ class MainActivity : ComponentActivity() {
 fun UtilityAppPreview() {
     MobileTech_UtilityAppTheme {
         UtilityApp(
-            useCelsius = true,
-            onUnitChange = {}
+            uiState = WeatherUiState(),
+            onUnitChange = {},
+            onRefresh = {}
         )
     }
 }
 
 @Composable
 fun UtilityApp(
-    useCelsius: Boolean,
-    onUnitChange: (Boolean) -> Unit
+    uiState: WeatherUiState,
+    onUnitChange: (Boolean) -> Unit,
+    onRefresh: () -> Unit
 ) {
     var selectedTab by rememberSaveable { mutableStateOf("Utility") }
 
@@ -89,9 +100,13 @@ fun UtilityApp(
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
             when (selectedTab) {
-                "Utility" -> UtilityScreen(useCelsius = useCelsius)
+                "Utility" -> UtilityScreen(
+                    uiState = uiState,
+                    onRefresh = onRefresh
+                )
+
                 "Settings" -> SettingsScreen(
-                    useCelsius = useCelsius,
+                    useCelsius = uiState.useCelsius,
                     onUnitChange = onUnitChange
                 )
             }
@@ -100,10 +115,14 @@ fun UtilityApp(
 }
 
 @Composable
-fun UtilityScreen(useCelsius: Boolean) {
+fun UtilityScreen(
+    uiState: WeatherUiState,
+    onRefresh: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
@@ -117,39 +136,68 @@ fun UtilityScreen(useCelsius: Boolean) {
             style = MaterialTheme.typography.titleLarge
         )
 
-        Text(
-            text = formatTemperature(30, useCelsius),
-            style = MaterialTheme.typography.displayLarge
-        )
+        val currentWeather = uiState.weather?.current
+        val temperature = currentWeather?.temperature
+        val errorMessage = uiState.errorMessage
+
+        when {
+            uiState.isLoading -> {
+                CircularProgressIndicator()
+                Text("Loading weather…")
+            }
+
+            errorMessage != null -> {
+                Text(
+                    text = errorMessage,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+
+            temperature != null -> {
+                Text(
+                    text = formatTemperature(
+                        temperature,
+                        uiState.useCelsius
+                    ),
+                    style = MaterialTheme.typography.displayLarge
+                )
+
+                Text(
+                    text = weatherDescription(currentWeather.weatherCode),
+                    style = MaterialTheme.typography.headlineSmall
+                )
+
+                Text(
+                    text = "Weather data time: ${
+                        currentWeather.time?.replace("T", " ")
+                            ?: "Unavailable"
+                    }",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+
+                Text(
+                    text = "Time zone: ${uiState.weather?.timezone ?: "Unavailable"}",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+
+            else -> {
+                Text("No weather data available. Tap Refresh.")
+            }
+        }
+
+        Button(
+            onClick = onRefresh,
+            enabled = !uiState.isLoading
+        ) {
+            Text(
+                if (errorMessage != null) "Retry" else "Refresh"
+            )
+        }
 
         Text(
-            text = "Partly cloudy",
-            style = MaterialTheme.typography.headlineSmall
-        )
-
-        Text(
-            text = "Sample data — live weather is not connected yet.",
-            style = MaterialTheme.typography.bodyMedium
-        )
-
-        Text(
-            text = "Upcoming weather",
-            style = MaterialTheme.typography.titleLarge
-        )
-
-        Text(
-            text = "10:00 AM · ${formatTemperature(30, useCelsius)} · Partly cloudy",
-            style = MaterialTheme.typography.bodyLarge
-        )
-
-        Text(
-            text = "11:00 AM · ${formatTemperature(31, useCelsius)} · Cloudy",
-            style = MaterialTheme.typography.bodyLarge
-        )
-
-        Text(
-            text = "12:00 PM · ${formatTemperature(32, useCelsius)} · Light rain",
-            style = MaterialTheme.typography.bodyLarge
+            text = "Weather data: Open-Meteo.com (CC BY 4.0)",
+            style = MaterialTheme.typography.bodySmall
         )
     }
 }
@@ -200,11 +248,37 @@ fun SettingsScreen(
     }
 }
 
-fun formatTemperature(celsius: Int, useCelsius: Boolean): String {
-    return if (useCelsius) {
-        "$celsius°C"
+fun formatTemperature(
+    celsius: Double,
+    useCelsius: Boolean
+): String {
+    val temperature = if (useCelsius) {
+        celsius
     } else {
-        val fahrenheit = celsius * 9.0 / 5.0 + 32
-        "${Math.round(fahrenheit)}°F"
+        celsius * 9.0 / 5.0 + 32
+    }
+
+    val unit = if (useCelsius) "°C" else "°F"
+    return "${Math.round(temperature)}$unit"
+}
+
+fun weatherDescription(code: Int?): String {
+    return when (code) {
+        0 -> "Clear sky"
+        1 -> "Mainly clear"
+        2 -> "Partly cloudy"
+        3 -> "Overcast"
+        45, 48 -> "Fog"
+        51, 53, 55 -> "Drizzle"
+        56, 57 -> "Freezing drizzle"
+        61, 63, 65 -> "Rain"
+        66, 67 -> "Freezing rain"
+        71, 73, 75 -> "Snow"
+        77 -> "Snow grains"
+        80, 81, 82 -> "Rain showers"
+        85, 86 -> "Snow showers"
+        95 -> "Thunderstorm"
+        96, 99 -> "Thunderstorm with hail"
+        else -> "Weather description unavailable"
     }
 }
