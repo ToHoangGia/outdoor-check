@@ -53,3 +53,15 @@ It provides the structure for a simple tabular UI using **Jetpack Compose** and 
 ## 📚 License
 This template is provided for educational use in CP3406.  
 Feel free to modify and extend it for your assessment.
+
+
+| Item | Your Outdoor Check decision |
+|---|---|
+| App purpose | Help users quickly check weather before leaving home or planning an outdoor activity. |
+| Information display | Use a prominent current-weather card and a short forecast list. These cards are planned; the current prototype uses text. |
+| Navigation | Keep the template’s two bottom tabs for the main screen and settings. |
+| Accessibility improvement | Make the screen scrollable so information remains accessible on small screens and with larger text. |
+| Trust and clarity | Clearly label the current weather values as sample data. When live data is added, display its update time and any loading errors. |
+| Privacy | Let users select a city manually without requiring location permission. |
+| Testing observations | Write what happened during the checks above, including anything that needs improvement. |
+| Tutor feedback question | “Does my main screen communicate the app’s purpose clearly, and is the amount of weather information appropriate?” |
