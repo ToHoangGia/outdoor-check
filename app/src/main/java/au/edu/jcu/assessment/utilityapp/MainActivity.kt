@@ -53,6 +53,7 @@ fun UtilityAppPreview() {
 @Composable
 fun UtilityApp() {
     var selectedTab by remember { mutableStateOf("Utility") }
+    var useCelsius by remember { mutableStateOf(true) }
 
     Scaffold(
         bottomBar = {
@@ -74,15 +75,18 @@ fun UtilityApp() {
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
             when (selectedTab) {
-                "Utility" -> UtilityScreen()
-                "Settings" -> SettingsScreen()
+                "Utility" -> UtilityScreen(useCelsius = useCelsius)
+                "Settings" -> SettingsScreen(
+                    useCelsius = useCelsius,
+                    onUnitChange = { useCelsius = it }
+                )
             }
         }
     }
 }
 
 @Composable
-fun UtilityScreen() {
+fun UtilityScreen(useCelsius: Boolean) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -100,7 +104,7 @@ fun UtilityScreen() {
         )
 
         Text(
-            text = "30°C",
+            text = formatTemperature(30, useCelsius),
             style = MaterialTheme.typography.displayLarge
         )
 
@@ -120,30 +124,73 @@ fun UtilityScreen() {
         )
 
         Text(
-            text = "10:00 AM · 30°C · Partly cloudy",
+            text = "10:00 AM · ${formatTemperature(30, useCelsius)} · Partly cloudy",
             style = MaterialTheme.typography.bodyLarge
         )
 
         Text(
-            text = "11:00 AM · 31°C · Cloudy",
+            text = "11:00 AM · ${formatTemperature(31, useCelsius)} · Cloudy",
             style = MaterialTheme.typography.bodyLarge
         )
 
         Text(
-            text = "12:00 PM · 32°C · Light rain",
+            text = "12:00 PM · ${formatTemperature(32, useCelsius)} · Light rain",
             style = MaterialTheme.typography.bodyLarge
         )
     }
 }
 
 @Composable
-fun SettingsScreen() {
+fun SettingsScreen(
+    useCelsius: Boolean,
+    onUnitChange: (Boolean) -> Unit
+) {
     Column(
-        Modifier
+        modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp), Arrangement.spacedBy(16.dp)
+            .padding(24.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text("Settings Screen", style = MaterialTheme.typography.headlineMedium)
-        Text("This is where you can add toggles or preferences.")
+        Text(
+            text = "Settings",
+            style = MaterialTheme.typography.headlineMedium
+        )
+
+        Text(
+            text = "Temperature unit",
+            style = MaterialTheme.typography.titleLarge
+        )
+
+        Text(
+            text = if (useCelsius) {
+                "Current unit: Celsius (°C)"
+            } else {
+                "Current unit: Fahrenheit (°F)"
+            },
+            style = MaterialTheme.typography.bodyLarge
+        )
+
+        Button(
+            onClick = { onUnitChange(true) },
+            enabled = !useCelsius
+        ) {
+            Text("Use Celsius (°C)")
+        }
+
+        Button(
+            onClick = { onUnitChange(false) },
+            enabled = useCelsius
+        ) {
+            Text("Use Fahrenheit (°F)")
+        }
+    }
+}
+
+fun formatTemperature(celsius: Int, useCelsius: Boolean): String {
+    return if (useCelsius) {
+        "$celsius°C"
+    } else {
+        val fahrenheit = celsius * 9.0 / 5.0 + 32
+        "${Math.round(fahrenheit)}°F"
     }
 }
