@@ -1,35 +1,27 @@
 # Outdoor Check
 
-## Introduction
-
-- Who it helps: people checking conditions before going outside.
-- What it shows: city, temperature, weather description, and a short forecast.
-- Its current limitation: all weather values are sample data; live weather is not connected.
+## App purpose
+Who would use Outdoor Check, what they can check before going outdoors, and why that is useful.
 
 ## Features
+Current temperature and weather description; upcoming hourly forecast with rain probability; Singapore, Townsville, and Brisbane selection; Celsius/Fahrenheit; refresh; loading and error messages; main and settings screens.
 
-- Main and settings screens with bottom navigation.
-- Sample weather for Singapore.
-- Celsius/Fahrenheit selection.
-- Temperature conversion on the main screen.
+## How to run
+Open the project in Android Studio, let Gradle sync, select an emulator or device running Android 8.0/API 26 or newer, and run the app with Internet access. No API key is required by the current implementation.
 
-## Composables
+## Project structure
+Only three preset cities; Internet required; no offline weather cache; preferences are not saved across a fresh app launch.
 
-| File or component | Responsibility |
+## Limitations
+Only three preset cities; Internet required; no offline weather cache; preferences are not saved across a fresh app launch.
+
+## Project structure
+| File | Responsibility |
 |---|---|
-| `MainActivity.kt` | Starts the app and connects the ViewModel state to Compose. |
-| `UtilityApp()` | Provides bottom navigation and passes state and callbacks to screens. |
-| `UtilityScreen()` | Displays sample weather using the selected temperature unit. |
-| `SettingsScreen()` | Displays the unit preference and sends change requests. |
-| `WeatherUiState.kt` | Describes shared UI state, currently `useCelsius`. |
-| `WeatherViewModel.kt` | Owns shared state and updates it through `StateFlow`. |
-| `formatTemperature()` | Formats Celsius values or converts them to Fahrenheit. |
-
-## Remaining Works
-
-- City selection.
-- Weather cards and a scrollable layout.
-- Repository and dependency injection.
-- Live weather through Retrofit.
-- Loading/error states and update timestamps.
-- ViewModel unit tests.
+| `MainActivity.kt` | Connects the ViewModel to Compose and contains the screens and forecast display. |
+| `WeatherUiState.kt` | Represents weather, forecast, selected city, units, loading, and errors. |
+| `WeatherViewModel.kt` | Updates screen state, requests weather, and prepares forecast entries. |
+| `WeatherRepository.kt` | Provides weather data through the API service. |
+| `WeatherApiService.kt` | Defines the Retrofit weather request. |
+| `AppContainer.kt` | Creates the API service and repository for dependency injection. |
+| `WeatherCity.kt` | Defines the supported cities and their coordinates. |
